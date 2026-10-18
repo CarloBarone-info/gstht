@@ -20,7 +20,7 @@ button{font:inherit;cursor:pointer}button:focus-visible{outline:3px solid #0284c
 .section-head{display:flex;justify-content:space-between;gap:18px;align-items:center;margin:20px 0 15px}
 .tag{background:#edf1f5;border-radius:999px;padding:7px 11px;color:#485b71;font-size:13px}
 .info{border:1px solid #b8dce3;background:#e6f3f7;color:#155f76;border-radius:50%;font-size:12px;font-weight:800;width:21px;height:21px;vertical-align:middle}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+
 .team{display:block;text-align:left;width:100%;background:var(--white);border:1px solid var(--line);border-radius:12px;padding:17px;transition:box-shadow .12s,border .12s}
 .team:hover{border-color:#88c8d8;box-shadow:0 4px 18px #12243b12}
 .team-top{display:flex;justify-content:space-between;align-items:center;gap:12px}
@@ -36,7 +36,7 @@ table{border-collapse:collapse;width:100%;font-size:14px}th,td{text-align:left;p
 .state.notRun{color:var(--gray)}
 .details{display:grid;grid-template-columns:1fr 1fr;gap:20px}
 dl{margin:0}dt{color:var(--muted);font-size:12px;margin-top:12px}dd{margin:2px 0 0;font-weight:750}
-.note{padding:16px;border:1px dashed #c3cbd4;border-radius:12px;font-size:14px;color:#506074;margin-top:20px}
+.headline{display:flex;align-items:center;flex-wrap:wrap;gap:14px}.observed-status{border:1px solid #ecc4c9;border-radius:999px;background:#fdf0f1;color:#a22236;padding:6px 12px;font-weight:800;font-size:13px}.tablewrap tbody tr:hover{background:#f8fbfd}.tablewrap tbody td:first-child{font-weight:650}.tablewrap .team-count{font-variant-numeric:tabular-nums}.tablewrap .rate{font-variant-numeric:tabular-nums}.note{padding:16px;border:1px dashed #c3cbd4;border-radius:12px;font-size:14px;color:#506074;margin-top:20px}
 .persona button{padding:7px 11px;background:transparent;color:#cedae8;border:1px solid #53667d;border-radius:8px}.persona button.selected{background:#e8f4f7;color:#134f68}
 .view{display:none}.view.active{display:block}
 footer{text-align:center;color:var(--muted);font-size:12px;margin:28px}
@@ -48,14 +48,14 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin:28px}
 <div class="persona" aria-label="View perspective"><button id="owner" class="selected">Owning engineer</button> <button id="dependent">Dependent engineer</button></div></header>
 <main>
 <section id="division" class="view active">
-<div class="eyebrow">Division overview</div><h1>Payments Division</h1>
+<div class="eyebrow">Division overview</div><div class="headline"><h1>Payments division</h1><span class="observed-status">Failures detected</span></div>
 <p>What do we know about its pipeline execution states, and where should we look next?</p>
-<div class="context"><b>Observed state:</b> Failed pipelines are visible. We do not infer business severity, downstream impact, or a global “healthy” grade from counts alone.</div>
+<div class="context"><b>Factual rollup:</b> Failures detected because 100 pipelines are in a failed state. The counts do not represent business severity or downstream impact.</div>
 <div class="metrics"><div class="metric green"><div class="label">✓ Succeeded</div><div class="value greentext">4,700</div><div class="label">94% of 5,000</div></div>
 <div class="metric red"><div class="label">✕ Failed</div><div class="value redtext">100</div><div class="label">2% of 5,000</div></div>
 <div class="metric"><div class="label">○ Not run yet</div><div class="value graytext">200</div><div class="label">4% of 5,000</div></div></div>
-<div class="section-head"><div><h2>Explore by team <button class="info" type="button" aria-label="About sorting" title="Sorted by the percentage of team pipelines in a failed state (highest first). This is NOT a ranking by business severity.">i</button></h2><p>Eight teams, grouped to reduce scanning. Select a team to inspect example pipelines.</p></div><div class="tag">Sorted by failure rate ↓</div></div>
-<div id="teams" class="grid"></div>
+<div class="section-head"><div><h2>Teams with failed pipelines <button class="info" type="button" aria-label="Explain failure rate sorting" title="Sorted by the percentage of team pipelines in a failed state (highest first). This is NOT a ranking by business severity.">i</button></h2><p>Eight teams with failures; choose one to inspect its example pipelines.</p></div><div class="tag">Failure rate ↓</div></div>
+<div class="tablewrap"><table aria-label="Teams with failed pipelines sorted by failure rate"><thead><tr><th>Team</th><th>Failed / total</th><th>Failure rate</th><th></th></tr></thead><tbody id="teams"></tbody></table></div>
 <div class="note"><b>Scope:</b> This view uses only known pipeline states and ownership. “Not run yet” is shown separately; it does not automatically mean success or failure.</div>
 </section>
 <section id="team" class="view"><button class="back" id="backDivision">← All teams</button><div class="eyebrow">Team drill-down</div><h1 id="teamName"></h1><p id="teamSummary"></p>
@@ -71,35 +71,102 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin:28px}
 </main>
 <script>
 const data=[
-{name:'Risk Platform',owner:'Risk Platform',total:10,failed:8,succeeded:1,notRun:1},
-{name:'Settlements',owner:'Settlements Engineering',total:80,failed:24,succeeded:50,notRun:6},
-{name:'Merchant Operations',owner:'Merchant Ops Data',total:120,failed:30,succeeded:82,notRun:8},
-{name:'Reporting',owner:'Reporting Platform',total:60,failed:12,succeeded:43,notRun:5},
-{name:'Billing',owner:'Billing Data',total:140,failed:20,succeeded:114,notRun:6},
-{name:'Analytics Platform',owner:'Analytics Platform',total:590,failed:6,succeeded:560,notRun:24},
-{name:'Payments Core',owner:'Payments Core Data',total:1000,failed:0,succeeded:970,notRun:30},
-{name:'Ledger & Reconciliation',owner:'Ledger Engineering',total:3000,failed:0,succeeded:2880,notRun:120}
+  {
+    "name": "Orders",
+    "owner": "Orders",
+    "total": 180,
+    "failed": 16,
+    "succeeded": 156,
+    "notRun": 8
+  },
+  {
+    "name": "Risk",
+    "owner": "Risk",
+    "total": 320,
+    "failed": 22,
+    "succeeded": 283,
+    "notRun": 15
+  },
+  {
+    "name": "Payments Ops",
+    "owner": "Payments Ops",
+    "total": 500,
+    "failed": 25,
+    "succeeded": 450,
+    "notRun": 25
+  },
+  {
+    "name": "Insights",
+    "owner": "Insights",
+    "total": 400,
+    "failed": 12,
+    "succeeded": 368,
+    "notRun": 20
+  },
+  {
+    "name": "Ledger",
+    "owner": "Ledger",
+    "total": 700,
+    "failed": 12,
+    "succeeded": 656,
+    "notRun": 32
+  },
+  {
+    "name": "Identity",
+    "owner": "Identity",
+    "total": 600,
+    "failed": 7,
+    "succeeded": 573,
+    "notRun": 20
+  },
+  {
+    "name": "Platform",
+    "owner": "Platform",
+    "total": 1200,
+    "failed": 4,
+    "succeeded": 1154,
+    "notRun": 42
+  },
+  {
+    "name": "Archive",
+    "owner": "Archive",
+    "total": 1100,
+    "failed": 2,
+    "succeeded": 1060,
+    "notRun": 38
+  }
 ];
 const totals = data.reduce((a,t)=>({total:a.total+t.total,failed:a.failed+t.failed,succeeded:a.succeeded+t.succeeded,notRun:a.notRun+t.notRun}),{total:0,failed:0,succeeded:0,notRun:0});
 if(totals.total!==5000||totals.failed!==100||totals.succeeded!==4700||totals.notRun!==200) throw Error('Mock data totals do not match the division');
 let currentTeam=data[0],currentPipeline=null,persona='owner';
 const $=id=>document.getElementById(id);
-function rate(t){return (100*t.failed/t.total).toFixed(1).replace('.0','')+'%';}
+function rate(t){return (100*t.failed/t.total).toFixed(1)+'%';}
 function show(v){document.querySelectorAll('.view').forEach(e=>e.classList.remove('active'));$(v).classList.add('active');window.scrollTo(0,0);}
 function metric(label,value,color){return '<div class="metric '+color+'"><div class="label">'+label+'</div><div class="value">'+value.toLocaleString()+'</div></div>';}
 function make(tag,cls,txt){let e=document.createElement(tag);if(cls)e.className=cls;if(txt)e.textContent=txt;return e;}
 data.sort((a,b)=>b.failed/b.total-a.failed/a.total);
-for(const t of data){const b=make('button','team');b.type='button';let top=make('div','team-top');top.append(make('div','team-name',t.name),make('div','rate',rate(t)+' failed'));b.append(top,make('div','team-small',t.owner));let row=make('div','team-row');for(const [name,count] of [['Failed',t.failed],['Succeeded',t.succeeded],['Not run',t.notRun]]){let x=make('span','',name+': ');x.append(make('b','',String(count)));row.append(x);}b.append(row);b.addEventListener('click',()=>openTeam(t));$('teams').append(b);}
-function examples(t){
-let rows=[];
-let specs=[['daily-publication','failed','daily_dataset'],['hourly-refresh','failed','hourly_dataset'],['reference-sync','succeeded','reference_data'],['weekly-archive','notRun','weekly_archive']];
-for(const [suffix,state,dataset] of specs){
- if(state==='failed'&&t.failed===0)continue;
- if(state==='succeeded'&&t.succeeded===0)continue;
- if(state==='notRun'&&t.notRun===0)continue;
- rows.push({name:t.name.toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-'+suffix,state,dataset,owner:t.owner});
+for(const t of data){
+ const tr=make('tr');
+ const nameCell=make('td');const btn=make('button','link',t.name);
+ btn.addEventListener('click',()=>openTeam(t));nameCell.append(btn);
+ const counts=make('td','team-count',t.failed+' / '+t.total);
+ const rateCell=make('td','rate',rate(t));
+ const arrow=make('td');const open=make('button','link','›');open.setAttribute('aria-label','View '+t.name+' pipelines');open.addEventListener('click',()=>openTeam(t));arrow.append(open);
+ tr.append(nameCell,counts,rateCell,arrow);$('teams').append(tr);
 }
-return rows;
+function examples(t){
+ if(t.name==='Orders') return [
+  {name:'orders-daily-export',state:'failed',dataset:'orders_daily_export',owner:'Orders'},
+  {name:'orders-hourly-refresh',state:'failed',dataset:'orders_hourly',owner:'Orders'},
+  {name:'orders-returns-sync',state:'failed',dataset:'order_returns',owner:'Orders'},
+  {name:'orders-reference-sync',state:'succeeded',dataset:'orders_reference',owner:'Orders'},
+  {name:'orders-archive-weekly',state:'notRun',dataset:'orders_archive',owner:'Orders'}
+ ];
+ const specs=[['daily-export','failed','daily_dataset'],['hourly-refresh','failed','hourly_dataset'],['reference-sync','succeeded','reference_data'],['archive-weekly','notRun','weekly_archive']];
+ return specs.filter(([suffix,state])=>t[state]>0).map(([suffix,state,dataset])=>({
+  name:t.name.toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-'+suffix,
+  state,dataset,owner:t.owner
+ }));
 }
 function stateEl(v){let s=make('span','state '+v);s.append(make('span','dot'),document.createTextNode(v==='notRun'?'Not run yet':v==='failed'?'Failed':'Succeeded'));return s;}
 function openTeam(t){currentTeam=t;$('teamName').textContent=t.name;$('teamSummary').textContent=t.failed+' of '+t.total+' pipelines failed ('+rate(t)+'). Failure rate is not an indicator of business impact.';$('teamMetrics').innerHTML=metric('Failed',t.failed,'red')+metric('Succeeded',t.succeeded,'green')+metric('Not run yet',t.notRun,'');$('pipelineRows').replaceChildren();
