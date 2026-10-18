@@ -34,3 +34,9 @@ This is a **design exploration scaffold**, not a production monitoring system. I
 4. Capture decisions and trade-offs in the presentation outline.
 
 Keep the final deliverable focused on rationale and design rather than implementation detail.
+
+## Static UX prototype (GitHub Pages)
+
+A low-fidelity, no-build prototype lives in [`docs/index.html`](docs/index.html). To publish it, choose **Settings → Pages → Deploy from a branch → `main` / `/docs`**. Once deployed, the expected public URL is https://carlobarone-info.github.io/gstht/.
+
+See [`docs/PROTOTYPE.md`](docs/PROTOTYPE.md) for the interaction scope and privacy considerations. GitHub Pages may require the repository to remain public on GitHub Free; private repositories require an eligible paid plan, and the website is still publicly accessible.
