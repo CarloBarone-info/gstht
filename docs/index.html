@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Divisional Rollup — UX prototype</title>
+<style>
+:root{--bg:#f5f7fa;--ink:#142235;--muted:#617083;--line:#dce4ed;--red:#b92d3b;--green:#14824d;--gray:#5f6b7c;--blue:#1a647b;--white:#fff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;line-height:1.45}
+header{background:#13223b;color:#fff;padding:20px max(20px,calc((100% - 1060px)/2));display:flex;justify-content:space-between;align-items:center;gap:16px}
+header strong{font-size:18px}header span{font-size:12px;color:#b9cadb}
+main{max-width:1060px;margin:0 auto;padding:28px 20px 64px}.eyebrow{text-transform:uppercase;letter-spacing:.12em;color:var(--blue);font-size:12px;font-weight:800}
+h1{font-size:32px;line-height:1.12;margin:10px 0}h2{font-size:21px;margin:0 0 5px}h3{margin:0 0 12px}p{color:var(--muted);margin:6px 0 14px}
+button{font:inherit;cursor:pointer}button:focus-visible{outline:3px solid #0284c7;outline-offset:3px}
+.context{background:#e9f5f8;border:1px solid #cde5e9;padding:13px 16px;border-radius:12px;color:#24576b;font-size:14px;margin:18px 0}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0 26px}
+.metric,.card,.details{background:var(--white);border:1px solid var(--line);border-radius:14px;padding:18px}
+.metric{border-top:5px solid var(--gray)}.metric.red{border-color:var(--line);border-top-color:var(--red)}.metric.green{border-top-color:var(--green)}.metric .value{font-size:28px;font-weight:800}.metric .label{font-size:13px;color:var(--muted);font-weight:650}
+.redtext{color:var(--red)}.greentext{color:var(--green)}.graytext{color:var(--gray)}
+.section-head{display:flex;justify-content:space-between;gap:18px;align-items:center;margin:20px 0 15px}
+.tag{background:#edf1f5;border-radius:999px;padding:7px 11px;color:#485b71;font-size:13px}
+.info{border:1px solid #b8dce3;background:#e6f3f7;color:#155f76;border-radius:50%;font-size:12px;font-weight:800;width:21px;height:21px;vertical-align:middle}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.team{display:block;text-align:left;width:100%;background:var(--white);border:1px solid var(--line);border-radius:12px;padding:17px;transition:box-shadow .12s,border .12s}
+.team:hover{border-color:#88c8d8;box-shadow:0 4px 18px #12243b12}
+.team-top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.team-name{font-size:17px;font-weight:750}.rate{color:var(--red);font-weight:800}.team-small{font-size:13px;color:var(--muted);margin:6px 0 12px}
+.team-row{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted)}.team-row b{color:var(--ink)}
+.back{border:0;padding:0;background:transparent;color:var(--blue);font-weight:750;margin-bottom:16px}
+.tablewrap{overflow-x:auto;background:var(--white);border:1px solid var(--line);border-radius:14px}
+table{border-collapse:collapse;width:100%;font-size:14px}th,td{text-align:left;padding:14px;border-bottom:1px solid var(--line)}th{background:#f0f4f7;color:#4f6171}tr:last-child td{border-bottom:0}
+.link{padding:0;border:0;background:transparent;color:var(--blue);font-weight:700;text-align:left}.link:hover{text-decoration:underline}
+.state{font-size:13px;font-weight:750;white-space:nowrap}.dot{display:inline-block;width:9px;height:9px;border-radius:100%;margin-right:7px;background:var(--gray)}
+.state.failed{color:var(--red)}.state.failed .dot{background:var(--red)}
+.state.succeeded{color:var(--green)}.state.succeeded .dot{background:var(--green)}
+.state.notRun{color:var(--gray)}
+.details{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+dl{margin:0}dt{color:var(--muted);font-size:12px;margin-top:12px}dd{margin:2px 0 0;font-weight:750}
+.note{padding:16px;border:1px dashed #c3cbd4;border-radius:12px;font-size:14px;color:#506074;margin-top:20px}
+.persona button{padding:7px 11px;background:transparent;color:#cedae8;border:1px solid #53667d;border-radius:8px}.persona button.selected{background:#e8f4f7;color:#134f68}
+.view{display:none}.view.active{display:block}
+footer{text-align:center;color:var(--muted);font-size:12px;margin:28px}
+@media(max-width:690px){header{display:block}.persona{margin-top:15px}.metrics,.grid,.details{grid-template-columns:1fr}.section-head{align-items:flex-start;flex-direction:column}.metric .value{font-size:25px}h1{font-size:27px}main{padding:22px 14px}}
+</style>
+</head>
+<body>
+<header><div><strong>Lakehouse / Divisional Rollup</strong><div><span>Low-fidelity UX prototype · Fictional data</span></div></div>
+<div class="persona" aria-label="View perspective"><button id="owner" class="selected">Owning engineer</button> <button id="dependent">Dependent engineer</button></div></header>
+<main>
+<section id="division" class="view active">
+<div class="eyebrow">Division overview</div><h1>Payments Division</h1>
+<p>What do we know about its pipeline execution states, and where should we look next?</p>
+<div class="context"><b>Observed state:</b> Failed pipelines are visible. We do not infer business severity, downstream impact, or a global “healthy” grade from counts alone.</div>
+<div class="metrics"><div class="metric green"><div class="label">✓ Succeeded</div><div class="value greentext">4,700</div><div class="label">94% of 5,000</div></div>
+<div class="metric red"><div class="label">✕ Failed</div><div class="value redtext">100</div><div class="label">2% of 5,000</div></div>
+<div class="metric"><div class="label">○ Not run yet</div><div class="value graytext">200</div><div class="label">4% of 5,000</div></div></div>
+<div class="section-head"><div><h2>Explore by team <button class="info" type="button" aria-label="About sorting" title="Sorted by the percentage of team pipelines in a failed state (highest first). This is NOT a ranking by business severity.">i</button></h2><p>Eight teams, grouped to reduce scanning. Select a team to inspect example pipelines.</p></div><div class="tag">Sorted by failure rate ↓</div></div>
+<div id="teams" class="grid"></div>
+<div class="note"><b>Scope:</b> This view uses only known pipeline states and ownership. “Not run yet” is shown separately; it does not automatically mean success or failure.</div>
+</section>
+<section id="team" class="view"><button class="back" id="backDivision">← All teams</button><div class="eyebrow">Team drill-down</div><h1 id="teamName"></h1><p id="teamSummary"></p>
+<div class="metrics" id="teamMetrics"></div>
+<div class="section-head"><div><h2>Example pipelines</h2><p>Representative mock rows; not the complete inventory for this team.</p></div><div class="tag">Failures shown first</div></div>
+<div class="tablewrap"><table><thead><tr><th>Pipeline</th><th>Status</th><th>Dataset</th><th>Owner</th></tr></thead><tbody id="pipelineRows"></tbody></table></div>
+</section>
+<section id="pipeline" class="view"><button class="back" id="backTeam">← Back to team</button><div class="eyebrow">Pipeline detail</div><h1 id="pipelineName"></h1><p id="pipelineIntro"></p>
+<div class="details"><div><h3>Observed pipeline facts</h3><dl id="pipelineFacts"></dl></div><div><h3>What can the engineer do next?</h3><p id="nextAction"></p><div class="context"><b>Owner:</b> <span id="ownerName"></span></div></div></div>
+<div class="note">Severity, dependency impact, and expected run behaviour are deliberately not inferred. This detail view illustrates navigation, not production incident management.</div>
+</section>
+<footer>Take-home design exploration · Mock pipeline data · No backend or operational integration</footer>
+</main>
+<script>
+const data=[
+{name:'Risk Platform',owner:'Risk Platform',total:10,failed:8,succeeded:1,notRun:1},
+{name:'Settlements',owner:'Settlements Engineering',total:80,failed:24,succeeded:50,notRun:6},
+{name:'Merchant Operations',owner:'Merchant Ops Data',total:120,failed:30,succeeded:82,notRun:8},
+{name:'Reporting',owner:'Reporting Platform',total:60,failed:12,succeeded:43,notRun:5},
+{name:'Billing',owner:'Billing Data',total:140,failed:20,succeeded:114,notRun:6},
+{name:'Analytics Platform',owner:'Analytics Platform',total:590,failed:6,succeeded:560,notRun:24},
+{name:'Payments Core',owner:'Payments Core Data',total:1000,failed:0,succeeded:970,notRun:30},
+{name:'Ledger & Reconciliation',owner:'Ledger Engineering',total:3000,failed:0,succeeded:2880,notRun:120}
+];
+const totals = data.reduce((a,t)=>({total:a.total+t.total,failed:a.failed+t.failed,succeeded:a.succeeded+t.succeeded,notRun:a.notRun+t.notRun}),{total:0,failed:0,succeeded:0,notRun:0});
+if(totals.total!==5000||totals.failed!==100||totals.succeeded!==4700||totals.notRun!==200) throw Error('Mock data totals do not match the division');
+let currentTeam=data[0],currentPipeline=null,persona='owner';
+const $=id=>document.getElementById(id);
+function rate(t){return (100*t.failed/t.total).toFixed(1).replace('.0','')+'%';}
+function show(v){document.querySelectorAll('.view').forEach(e=>e.classList.remove('active'));$(v).classList.add('active');window.scrollTo(0,0);}
+function metric(label,value,color){return '<div class="metric '+color+'"><div class="label">'+label+'</div><div class="value">'+value.toLocaleString()+'</div></div>';}
+function make(tag,cls,txt){let e=document.createElement(tag);if(cls)e.className=cls;if(txt)e.textContent=txt;return e;}
+data.sort((a,b)=>b.failed/b.total-a.failed/a.total);
+for(const t of data){const b=make('button','team');b.type='button';let top=make('div','team-top');top.append(make('div','team-name',t.name),make('div','rate',rate(t)+' failed'));b.append(top,make('div','team-small',t.owner));let row=make('div','team-row');for(const [name,count] of [['Failed',t.failed],['Succeeded',t.succeeded],['Not run',t.notRun]]){let x=make('span','',name+': ');x.append(make('b','',String(count)));row.append(x);}b.append(row);b.addEventListener('click',()=>openTeam(t));$('teams').append(b);}
+function examples(t){
+let rows=[];
+let specs=[['daily-publication','failed','daily_dataset'],['hourly-refresh','failed','hourly_dataset'],['reference-sync','succeeded','reference_data'],['weekly-archive','notRun','weekly_archive']];
+for(const [suffix,state,dataset] of specs){
+ if(state==='failed'&&t.failed===0)continue;
+ if(state==='succeeded'&&t.succeeded===0)continue;
+ if(state==='notRun'&&t.notRun===0)continue;
+ rows.push({name:t.name.toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-'+suffix,state,dataset,owner:t.owner});
+}
+return rows;
+}
+function stateEl(v){let s=make('span','state '+v);s.append(make('span','dot'),document.createTextNode(v==='notRun'?'Not run yet':v==='failed'?'Failed':'Succeeded'));return s;}
+function openTeam(t){currentTeam=t;$('teamName').textContent=t.name;$('teamSummary').textContent=t.failed+' of '+t.total+' pipelines failed ('+rate(t)+'). Failure rate is not an indicator of business impact.';$('teamMetrics').innerHTML=metric('Failed',t.failed,'red')+metric('Succeeded',t.succeeded,'green')+metric('Not run yet',t.notRun,'');$('pipelineRows').replaceChildren();
+for(const p of examples(t)){const tr=make('tr');const td=make('td');const btn=make('button','link',p.name+' →');btn.addEventListener('click',()=>openPipeline(p));td.append(btn);tr.append(td);const stat=make('td');stat.append(stateEl(p.state));tr.append(stat,make('td','',p.dataset),make('td','',p.owner));$('pipelineRows').append(tr);}show('team');}
+function openPipeline(p){currentPipeline=p;$('pipelineName').textContent=p.name;$('pipelineIntro').textContent='A representative record for '+currentTeam.name+'.';$('pipelineFacts').replaceChildren();
+for(const [k,v] of [['Status',p.state==='notRun'?'Not run yet':p.state==='failed'?'Failed':'Succeeded'],['Published dataset',p.dataset],['Owning team',p.owner],['Run timestamp','Not guaranteed by brief']]){$('pipelineFacts').append(make('dt','',k),make('dd','',v));}
+$('ownerName').textContent=p.owner;updateNext();show('pipeline');}
+function updateNext(){$('nextAction').textContent=persona==='owner'?'An owner can investigate the failed pipeline using their existing engineering tools. Fix and escalation actions are intentionally outside this prototype.':'A dependent engineer may need to contact the owning team. We show ownership rather than inventing a messaging feature.';}
+$('backDivision').addEventListener('click',()=>show('division'));$('backTeam').addEventListener('click',()=>show('team'));
+for(const v of ['owner','dependent'])$(v).addEventListener('click',()=>{persona=v;$('owner').classList.toggle('selected',v==='owner');$('dependent').classList.toggle('selected',v==='dependent');updateNext();});
+</script>
+</body></html>
