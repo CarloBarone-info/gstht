@@ -4,9 +4,9 @@ A small starter for exploring a division-level data-health interface.
 
 > Work in progress. All pipeline data in this repository is fictional.
 
-## Run locally
+## Run the existing React scaffold locally
 
-Requires Node.js 20+.
+Requires Node.js 20+. This is a separate starter; the submitted static Pages prototype is in `docs/index.html` and needs no npm installation.
 
 ```bash
 npm install
@@ -40,3 +40,5 @@ Keep the final deliverable focused on rationale and design rather than implement
 A low-fidelity, no-build prototype lives in [`docs/index.html`](docs/index.html). To publish it, choose **Settings → Pages → Deploy from a branch → `main` / `/docs`**. Once deployed, the expected public URL is https://carlobarone-info.github.io/gstht/.
 
 See [`docs/PROTOTYPE.md`](docs/PROTOTYPE.md) for the interaction scope and privacy considerations. GitHub Pages may require the repository to remain public on GitHub Free; private repositories require an eligible paid plan, and the website is still publicly accessible.
+
+**For the presentation-aligned prototype:** see [docs/PROTOTYPE.md](docs/PROTOTYPE.md) for local run instructions (no install) and the GitHub Pages deployment steps.
